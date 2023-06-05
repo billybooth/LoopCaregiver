@@ -123,17 +123,25 @@ platform :ios do
       issuer_id: "#{FASTLANE_ISSUER_ID}",
       key_content: "#{FASTLANE_KEY}"
     )
-
+    
     def configure_bundle_id(name, identifier, capabilities)
       bundle_id = Spaceship::ConnectAPI::BundleId.find(identifier) || Spaceship::ConnectAPI::BundleId.create(name: name, identifier: identifier)
       capabilities.each { |capability|
         bundle_id.create_capability(capability)
       }
     end
+    
+    def configure_app_group(name, identifier, bundleidentifier)
+      app = Spaceship::Portal::App.find(bundleidentifier)
+      app_group = Spaceship::Portal::AppGroup.find(identifier) || Spaceship::Portal::AppGroup.create(group_id: identifier, name: name)
+      app.associate_groups([app_group])
+    end
 
     configure_bundle_id("LoopCaregiver", "com.#{TEAMID}.loopkit.LoopCaregiver", [
+      Spaceship::ConnectAPI::BundleIdCapability::Type::APP_GROUPS
     ])
-
+    
+    configure_app_group("LoopCaregiver App Group", "group.com.#{TEAMID}.loopkit.LoopCaregiverGroup", "com.#{TEAMID}.loopkit.LoopCaregiver")
   end
 
   desc "Provision Caregiver Certificate"
